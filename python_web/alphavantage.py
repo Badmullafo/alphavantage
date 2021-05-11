@@ -1,6 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import socketserver, os, time
-import requests, datetime
+import socketserver, os, time, requests, datetime
 from datetime import date
 from requests.exceptions import HTTPError
 
@@ -12,9 +11,9 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(bytes("<html><head><title>https://pythonbasics.org</title></head>", "utf-8"))
-        self.wfile.write(bytes("<p>Request: %s</p>" % self.path, "utf-8"))
+        self.wfile.write(bytes("<p>Request: %s from host %s</p>" % (self.path, hostName), "utf-8"))
         self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the average is %s .</p>" % (nDays,symbol,avg), "utf-8"))
+        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the average is %s .</p>" % (nDays,symbol,str(avg)), "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
 
 def days_since_date(last_date):
@@ -52,30 +51,22 @@ def get_values(response_json):
 def Average(lst):
     return sum(lst) / len(lst)
 
-
 def main():
 
-    global serverPort, symbol, apiKey, nDays, avg
+    global serverPort, symbol, apiKey, nDays, avg, hostName
 
-#serverPort = int(os.getenv('LISTEN_PORT'))
-#The hostname of the server - in this case the docker container name
-#hostName = os.getenv('HOSTNAME')
-##symbol = int(os.getenv('SYMBOL'))
-#apiKey = os.getenv('APIKEY')
-#nDays = int(os.getenv('NDAYS'))
-
-    serverPort = 8000
-    hostName = 'localhost'
-    symbol = 'IBM'
-    apiKey = 'demo'
-    nDays = 5
+    serverPort = int(os.getenv('LISTEN_PORT'))
+    #The hostname of the server - in this case the docker container name
+    hostName = os.getenv('HOSTNAME')
+    symbol = os.getenv('SYMBOL')
+    apiKey = os.getenv('APIKEY')
+    nDays = int(os.getenv('NDAYS'))
 
     url = 'https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
 
     try:
         #Don't have to convert the object to json later on, it is invoked as json
         response_json = requests.get(url).json()
-        value_list = get_values(response_json)
 
         # If the response_json was successful, no Exception will be raised
         #response_json.raise_for_status()
@@ -87,8 +78,8 @@ def main():
         print('Success!')
     # print(response_json)
 
-    #print("The average is %s" % (Average(value_list)))
-    avg = (Average(value_list))
+    value_list=get_values(response_json)
+    avg = Average(value_list)
 
     webServer = HTTPServer((hostName, serverPort), MyServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
