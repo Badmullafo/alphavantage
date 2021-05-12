@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: my-app
-          image: badmullafo/outyet:1.0_arm
+          image: badmullafo/alphavantage:1.0_arm
           resources:
             requests:
               memory: "64Mi"
@@ -23,3 +23,12 @@ spec:
                 name: app-config
             - secretRef:
                 name: credentials
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 10
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 10

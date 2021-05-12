@@ -11,7 +11,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /test
+      - path: /stock
         backend:
           serviceName: my-app
-          servicePort: 8080
+          servicePort: 8000
