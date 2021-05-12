@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: alphavantage
 spec:
   template:
     spec:
       containers:
-        - name: my-app
+        - name: alphavantage
           image: badmullafo/alphavantage:1.0_arm
           resources:
             requests:

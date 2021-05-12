@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: alphavantage
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: alphavantage
   template:
     metadata:
       labels:
-        app: my-app
+        app: alphavantage
     spec:
       containers:
-      - name: my-app
-        image: my-app
+      - name: alphavantage
+        image: alphavantage
         resources:
           requests:
             memory: "64Mi"

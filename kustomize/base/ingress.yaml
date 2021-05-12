@@ -10,5 +10,5 @@ spec:
       paths:
       - path: /web
         backend:
-          serviceName: my-app
+          serviceName: alphavantage
           servicePort: 80

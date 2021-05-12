@@ -13,5 +13,5 @@ spec:
       paths:
       - path: /stock
         backend:
-          serviceName: my-app
+          serviceName: alphavantage
           servicePort: 8000
