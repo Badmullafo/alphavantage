@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      containers:
+        - name: my-app
+          image: badmullafo/outyet:1.0_arm
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: foo
+              value: we-are-in-prod
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: credentials
