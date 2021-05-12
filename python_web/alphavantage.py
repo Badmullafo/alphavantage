@@ -19,7 +19,6 @@ class MyServer(BaseHTTPRequestHandler):
 def days_since_date(last_date):
     #Compute date difference
     today = datetime.date.today()
-    #print("The date today is {0}".format(today))
 
     delta =  today - last_date
     return(delta.days)
@@ -32,16 +31,14 @@ def get_values(response_json):
     time_series_json = response_json['Time Series (Daily)']
 
     for time, elements in time_series_json.items():
-        #print(time)
-        #Parse the date header as time object for comparison - the date bit makes sure its a date and has no hour/min/second values
+        #Parse the date header as date object for comparison - the date bit makes sure its a date and has no hour/min/second values
         date_time_obj = datetime.datetime.strptime(time, '%Y-%m-%d').date()
 
-        #Return from loop if days is larger than limit
+        #Return to start of loop if days is larger than limit (avoids adding values out of range to valuelist)
         if days_since_date(date_time_obj) > nDays:
             continue
 
         for subkey, value in elements.items():
-            #print("Key: {0}, Value: {1}".format(subkey, value))
             #Only add up the close
             if subkey ==  "4. close":
                 valuelist.append(float(value))
@@ -65,7 +62,7 @@ def main():
     url = 'https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
 
     try:
-        #Don't have to convert the object to json later on, it is invoked as json
+        #Don't have to convert the object to json later on, it is invoked as json with the .json bit
         response_json = requests.get(url).json()
 
         # If the response_json was successful, no Exception will be raised
