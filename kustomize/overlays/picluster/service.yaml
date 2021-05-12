@@ -6,7 +6,7 @@ metadata:
     app: alphavantage
 spec:
   ports:
-    - port: 8000
+    - port: 25000
       targetPort: 8000
   selector:
     app: alphavantage

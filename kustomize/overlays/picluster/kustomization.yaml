@@ -7,11 +7,11 @@ bases:
 resources:
 - namespace.yaml
 
-namespace: test
+namespace: alphavantage
 #nameSuffix: -prod
 
 commonLabels:
-  foo: bar
+  arch: arm
 
 patchesStrategicMerge:
 - deployment_replicas.yaml
@@ -19,17 +19,23 @@ patchesStrategicMerge:
 - service.yaml
 - ingress.yaml
 
-
 configMapGenerator:
   - name: app-config
     literals:
-      - username=prod-user
+      - SYMBOL=IBM
+      - NDAYS=10
 
 secretGenerator:
   - name: credentials
     type: Opaque
     literals:
-      - password=foo
-  - name: certs
-    files:
-      - assets/ca.pem
+      - APIKEY=RABZYXWVHB8MX5GO
+
+#patchesJson6902:
+#- target:
+#    namespace: alphavantage
+#    group: io.k8s.api.core
+#    version: v1
+#    kind: Service
+#    name: service.yaml
+#  path: ports.yaml

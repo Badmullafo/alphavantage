@@ -14,4 +14,4 @@ spec:
       - path: /stock
         backend:
           serviceName: alphavantage
-          servicePort: 8000
+          servicePort: 25000
