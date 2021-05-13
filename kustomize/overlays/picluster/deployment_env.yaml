@@ -7,6 +7,7 @@ spec:
     spec:
       containers:
         - name: alphavantage
+          imagePullPolicy: Always
           image: badmullafo/alphavantage:1.0_arm
           resources:
             requests:
@@ -15,9 +16,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
-          env:
-            - name: foo
-              value: we-are-in-prod
           envFrom:
             - configMapRef:
                 name: app-config
