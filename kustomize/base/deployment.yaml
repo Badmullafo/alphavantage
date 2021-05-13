@@ -24,6 +24,3 @@ spec:
             cpu: "500m"
         tty: true
         stdin: true
-        env:
-          - name: foo
-            value: bar
