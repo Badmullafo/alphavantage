@@ -46,3 +46,19 @@ Basic folder layout
         ├── custom-metadata-labels
         └── picluster
             └── assets
+
+### Testing
+
+To test it has been deployed, go to the web page, use the `/stock` appended URL or whatever you specifieed in your `ingress.yaml`
+
+    http://myapp.com/stock
+
+That should display the result, if you have more than on replica, if you refresh the web page repeatedly you should get a different pod serve you the page each time, for example the host will change (see top line)
+
+    Request: /stock from host alphavantage-5664d6c6bf-4xgd7
+
+    Getting the last 10 days worth of results for IBM, the list is [141.3, 144.22, 146.17, 145.46, 148.42, 145.22, 145.75, 144.75] average is 145.16.
+
+### Limitations
+
+* Would recommend not upping the replica count to more than 4 as the API key seems to have some kind of limitation on how often it can be used in a short space of time
