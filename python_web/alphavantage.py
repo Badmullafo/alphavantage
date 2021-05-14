@@ -13,7 +13,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<html><head><title>https://pythonbasics.org</title></head>", "utf-8"))
         self.wfile.write(bytes("<p>Request: %s from host %s</p>" % (self.path, hostName), "utf-8"))
         self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the average is %s .</p>" % (nDays,symbol,str(avg)), "utf-8"))
+        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the list is %s average is %s.</p>" % (nDays,symbol,valueList,str(avg)), "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
 
 def days_since_date(last_date):
@@ -45,12 +45,12 @@ def get_values(response_json):
 
     return valuelist
 
-def Average(lst):
-    return sum(lst) / len(lst)
+def average(lst):
+    return round(sum(lst) / len(lst),2)
 
 def main():
 
-    global serverPort, symbol, apiKey, nDays, avg, hostName
+    global serverPort, symbol, apiKey, nDays, avg, hostName, valueList
 
     serverPort = int(os.getenv('LISTEN_PORT'))
     #The hostname of the server - in this case the docker container name
@@ -75,8 +75,8 @@ def main():
         print('Success!')
     # print(response_json)
 
-    value_list=get_values(response_json)
-    avg = Average(value_list)
+    valueList=get_values(response_json)
+    avg = average(valueList)
 
     webServer = HTTPServer((hostName, serverPort), MyServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
