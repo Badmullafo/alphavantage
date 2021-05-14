@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base
+
+resources:
+- namespace.yaml
+#- metallb.yaml
+#- configmap.yaml 
+#- secret.yaml
+
+namespace: picluster-alphavantage
+#nameSuffix: -prod
+
+commonLabels:
+  arch: arm
+
+patchesStrategicMerge:
+- deployment_replicas.yaml
+- deployment_env.yaml
+- service.yaml
+- ingress.yaml
+
+configMapGenerator:
+  - name: app-config
+    literals:
+      - SYMBOL=IBM
+      - NDAYS=10
+
+secretGenerator:
+  - name: credentials
+    type: Opaque
+    literals:
+      - APIKEY=RABZYXWVHB8MX5GO
+
+#patchesJson6902:
+#- target:
+#    namespace: alphavantage
+#    group: io.k8s.api.core
+#    version: v1
+#    kind: Service
+#    name: service.yaml
+#  path: ports.yaml

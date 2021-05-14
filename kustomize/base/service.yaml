@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: alphavantage
+  labels:
+    app: alphavantage
+spec:
+  selector:
+    app: alphavantage
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
