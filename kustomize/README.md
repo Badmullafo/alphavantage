@@ -42,9 +42,7 @@ Basic folder layout
     ├── base
     └── overlays
         ├── cloud
-        │   └── assets
         └── picluster
-            └── assets
 
 ### Testing
 
