@@ -6,6 +6,9 @@ bases:
 
 resources:
 - namespace.yaml
+#- metallb.yaml
+#- configmap.yaml 
+#- secret.yaml
 
 namespace: picluster-alphavantage
 #nameSuffix: -prod
