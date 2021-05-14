@@ -3,7 +3,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This readme provides instructions on how to configure and deploy the app to a pre-existing Kubernetes cluster
+This readme provides instructions on how to configure and deploy the app to a pre-existing Kubernetes cluster. The instructions use Kustomise to template manifests
 
 ### Built With
 
@@ -19,9 +19,9 @@ This readme provides instructions on how to configure and deploy the app to a pr
 
 #### Background
 
-I am running kubernetes on a rasberry pi cluster which only supports images based on arm architectures, recommend using `cloud`. Also this non-cloud setup does not support cloud load balancers so the type is `NodePort`
+I am running kubernetes on a rasberry pi cluster which only supports images based on arm architectures, recommend using `cloud`. Also this non-cloud setup does not support cloud load balancers so the type is `NodePort`. I tried implementing a kind of virtual load balancer using [metallb](https://metallb.universe.tf/installation/) there are certain limitations to the [layer2](https://metallb.universe.tf/concepts/layer2/#limitations) setup, I found it to be unrealiable
 
-1. Choose an environment in overlays `picluster` or `cloud`
+1. Choose an environment in overlays  `cloud` or `picluster` - recommend cloud
 2. Configure various yaml files to your liking in overlays/ `deployment_env.yaml,deployment_replicas.yaml,ingress.yaml,kustomization.yaml,namespace.yaml,service.yaml`
 
 ### Initialisation
@@ -43,7 +43,6 @@ Basic folder layout
     └── overlays
         ├── cloud
         │   └── assets
-        ├── custom-metadata-labels
         └── picluster
             └── assets
 
