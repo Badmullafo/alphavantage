@@ -75,7 +75,7 @@ def main():
 
     serverPort = int(os.getenv('LISTEN_PORT'))
     #The hostname of the server - in this case the docker container name
-    hostName = 'localhost'
+    hostName = os.getenv('HOSTNAME')
     symbol = os.getenv('SYMBOL')
     apiKey = os.getenv('APIKEY')
     nDays = int(os.getenv('NDAYS'))
