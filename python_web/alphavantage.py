@@ -1,11 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import socketserver, os, time, requests, datetime
-from datetime import date
+import socketserver, os, time, requests, datetime, time, threading
 from requests.exceptions import HTTPError
+from socketserver import ThreadingMixIn
 
 #The port to listen on - can be defined via docker
 
-class MyServer(BaseHTTPRequestHandler):
+class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -16,12 +16,33 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the list is %s average is %s.</p>" % (nDays,symbol,valueList,str(avg)), "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
 
+class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
+    pass
+
 def days_since_date(last_date):
     #Compute date difference
     today = datetime.date.today()
 
     delta =  today - last_date
     return(delta.days)
+
+def get_api(url):
+
+    try:
+        #Don't have to convert the object to json later on, it is invoked as json with the .json bit
+
+        response_json = requests.get(url).json()
+        
+        # If the response_json was successful, no Exception will be raised
+        #response_json.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')  # Python 3.6
+    except Exception as err:
+        print(f'Other error occurred: {err}')  # Python 3.6
+    else:
+        print('Success - got a response from: '+url )
+        
+        return response_json
 
 def get_values(response_json):
 
@@ -54,35 +75,24 @@ def main():
 
     serverPort = int(os.getenv('LISTEN_PORT'))
     #The hostname of the server - in this case the docker container name
-    hostName = os.getenv('HOSTNAME')
+    hostName = 'localhost'
     symbol = os.getenv('SYMBOL')
     apiKey = os.getenv('APIKEY')
     nDays = int(os.getenv('NDAYS'))
 
-    url = 'https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
+    url='https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
 
-    try:
-        #Don't have to convert the object to json later on, it is invoked as json with the .json bit
-        response_json = requests.get(url).json()
-
-        # If the response_json was successful, no Exception will be raised
-        #response_json.raise_for_status()
-    except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')  # Python 3.6
-    except Exception as err:
-        print(f'Other error occurred: {err}')  # Python 3.6
-    else:
-        print('Success!')
-    # print(response_json)
-
+    response_json = get_api(url)
     valueList=get_values(response_json)
     avg = average(valueList)
 
-    webServer = HTTPServer((hostName, serverPort), MyServer)
+    webServer = ThreadingSimpleServer((hostName, serverPort), Handler)
+
     print("Server started http://%s:%s" % (hostName, serverPort))
 
     try:
         webServer.serve_forever()
+
     except KeyboardInterrupt:
         pass
 
