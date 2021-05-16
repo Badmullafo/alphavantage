@@ -1,11 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import socketserver, os, time, requests, datetime
-from datetime import date
+import socketserver, os, time, requests, datetime, time, threading
 from requests.exceptions import HTTPError
+from socketserver import ThreadingMixIn
 
 #The port to listen on - can be defined via docker
 
-class MyServer(BaseHTTPRequestHandler):
+class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -13,8 +13,11 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<html><head><title>https://pythonbasics.org</title></head>", "utf-8"))
         self.wfile.write(bytes("<p>Request: %s from host %s</p>" % (self.path, hostName), "utf-8"))
         self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the average is %s .</p>" % (nDays,symbol,str(avg)), "utf-8"))
+        self.wfile.write(bytes("<p>Getting the last %s days worth of results for %s, the list is %s average is %s.</p>" % (nDays,symbol,valueList,str(avg)), "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
+
+class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
+    pass
 
 def days_since_date(last_date):
     #Compute date difference
@@ -22,6 +25,24 @@ def days_since_date(last_date):
 
     delta =  today - last_date
     return(delta.days)
+
+def get_api(url):
+
+    try:
+        #Don't have to convert the object to json later on, it is invoked as json with the .json bit
+
+        response_json = requests.get(url).json()
+        
+        # If the response_json was successful, no Exception will be raised
+        #response_json.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')  # Python 3.6
+    except Exception as err:
+        print(f'Other error occurred: {err}')  # Python 3.6
+    else:
+        print('Success - got a response from: '+url )
+        
+        return response_json
 
 def get_values(response_json):
 
@@ -45,12 +66,12 @@ def get_values(response_json):
 
     return valuelist
 
-def Average(lst):
-    return sum(lst) / len(lst)
+def average(lst):
+    return round(sum(lst) / len(lst),2)
 
 def main():
 
-    global serverPort, symbol, apiKey, nDays, avg, hostName
+    global serverPort, symbol, apiKey, nDays, avg, hostName, valueList
 
     serverPort = int(os.getenv('LISTEN_PORT'))
     #The hostname of the server - in this case the docker container name
@@ -59,30 +80,19 @@ def main():
     apiKey = os.getenv('APIKEY')
     nDays = int(os.getenv('NDAYS'))
 
-    url = 'https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
+    url='https://www.alphavantage.co/query?apikey='+apiKey+'&function=TIME_SERIES_DAILY_ADJUSTED&symbol='+symbol
 
-    try:
-        #Don't have to convert the object to json later on, it is invoked as json with the .json bit
-        response_json = requests.get(url).json()
+    response_json = get_api(url)
+    valueList=get_values(response_json)
+    avg = average(valueList)
 
-        # If the response_json was successful, no Exception will be raised
-        #response_json.raise_for_status()
-    except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')  # Python 3.6
-    except Exception as err:
-        print(f'Other error occurred: {err}')  # Python 3.6
-    else:
-        print('Success!')
-    # print(response_json)
+    webServer = ThreadingSimpleServer((hostName, serverPort), Handler)
 
-    value_list=get_values(response_json)
-    avg = Average(value_list)
-
-    webServer = HTTPServer((hostName, serverPort), MyServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
 
     try:
         webServer.serve_forever()
+
     except KeyboardInterrupt:
         pass
 

@@ -21,10 +21,17 @@ This readme provides instructions on how to configure and deploy the app to a pr
 
 I am running kubernetes on a rasberry pi cluster which only supports images based on arm architectures, recommend using `cloud`. Also this non-cloud setup does not support cloud load balancers so the type is `NodePort`. I tried implementing a kind of virtual load balancer using [metallb](https://metallb.universe.tf/installation/) there are certain limitations to the [layer2](https://metallb.universe.tf/concepts/layer2/#limitations) setup, I found it to be unrealiable
 
-1. Choose an environment in overlays  `cloud` or `picluster` - recommend cloud
-2. Configure various yaml files to your liking in overlays/ `deployment_env.yaml,deployment_replicas.yaml,ingress.yaml,kustomization.yaml,namespace.yaml,service.yaml`
+1. Choose an environment in overlays  `cloud` or `picluster` - **recommend cloud as picluster is arm based and won't work on non arm**
+2. Configure various yaml files to your liking in `overlays/cloud` `deployment_env.yaml,deployment_replicas.yaml,ingress.yaml,kustomization.yaml,namespace.yaml,service.yaml`
 
 ### Initialisation
+
+This configuration will:
+
+* Create required namespaces
+* Create required deployment/service/ingress
+* Pull required images
+* Inject secrets and variables via configmap (see variable injection section)
 
 #### Pure kubernetes 
 
@@ -44,6 +51,22 @@ Basic folder layout
         ├── cloud
         └── picluster
 
+### Variable injection
+
+To inject variables via configmap and secret generator, look in `kustomize/overlays/*/kustomization.yaml`, change these variables to effect the output of the page
+
+    configMapGenerator:
+    - name: app-config
+        literals:
+        - SYMBOL=IBM
+        - NDAYS=10
+
+    secretGenerator:
+    - name: credentials
+        type: Opaque
+        literals:
+        - APIKEY=RABZYXWVHB8MX5GO
+
 ### Testing
 
 To test it has been deployed, go to the web page, use the `/stock` appended URL or whatever you specifieed in your `ingress.yaml`
@@ -59,3 +82,4 @@ That should display the result, if you have more than on replica, if you refresh
 ### Limitations
 
 * Would recommend not upping the replica count to more than 4 as the API key seems to have some kind of limitation on how often it can be used in a short space of time
+* Only works as nodeport on picluster

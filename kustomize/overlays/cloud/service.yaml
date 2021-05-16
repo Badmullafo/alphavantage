@@ -11,6 +11,5 @@ spec:
   selector:
     app: alphavantage
   sessionAffinity: None
-  type: NodePort
-status:
-  loadBalancer: {}
+  externalTrafficPolicy: Local
+  type: LoadBalancer
