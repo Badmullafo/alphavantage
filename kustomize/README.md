@@ -31,7 +31,7 @@ This configuration will:
 * Create required namespaces
 * Create required deployment/service/ingress
 * Pull required images
-* Inject secrets and variables via configmap
+* Inject secrets and variables via configmap (see variable injection section)
 
 #### Pure kubernetes 
 
