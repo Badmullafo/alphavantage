@@ -27,8 +27,6 @@ Basic folder layout
     ├── kustomize
     │   ├── base
     │   └── overlays
-    │       ├── custom-metadata-labels
-    │       ├── dev
-    │       └── prod
-    │           └── assets
+    │       ├── cloud
+    │       └── picluster
     └── python_web
