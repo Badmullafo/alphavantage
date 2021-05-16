@@ -51,6 +51,22 @@ Basic folder layout
         ├── cloud
         └── picluster
 
+### Variable injection
+
+To inject variables via configmap and secret generator, look in `kustomize/overlays/*/kustomization.yaml`, change these variables to effect the output of the page
+
+    configMapGenerator:
+    - name: app-config
+        literals:
+        - SYMBOL=IBM
+        - NDAYS=10
+
+    secretGenerator:
+    - name: credentials
+        type: Opaque
+        literals:
+        - APIKEY=RABZYXWVHB8MX5GO
+
 ### Testing
 
 To test it has been deployed, go to the web page, use the `/stock` appended URL or whatever you specifieed in your `ingress.yaml`
