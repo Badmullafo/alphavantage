@@ -13,14 +13,16 @@ import (
 
 func main() {
 
+	type MetaData struct {
+		Info           string `json:"1. Information"`
+		Symbol         string `json:"2. Symbol"`
+		Last_refreshed string `json:"3. Last Refreshed"`
+		Output_size    string `json:"4. Output Size"`
+		Tz             string `json:"5. Time Zone"`
+	}
+
 	type Daily struct {
-		MetaData struct {
-			Info           string `json:"1. Information"`
-			Symbol         string `json:"2. Symbol"`
-			Last_refreshed string `json:"3. Last Refreshed"`
-			Output_size    string `json:"4. Output Size"`
-			Tz             string `json:"5. Time Zone"`
-		} `json:"Meta Data"`
+		MetaData `json:"Meta Data"`
 	}
 
 	/* type Daily struct {
@@ -64,5 +66,7 @@ func main() {
 	}
 
 	fmt.Printf("\nblah %s \n", summary.MetaData.Info)
+
+	fmt.Printf("%+v\n", summary)
 
 }
