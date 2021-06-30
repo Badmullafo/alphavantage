@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	// "time"
 	"log"
+	"time"
 )
 
 func main() {
@@ -21,8 +21,24 @@ func main() {
 		Tz             string `json:"5. Time Zone"`
 	}
 
+	type Dailydata struct {
+		Open       string `json:"1. Open"`
+		High       string `json:"2. high"`
+		Low        string `json:"3. low"`
+		Close      string `json:"4. close"`
+		Adj_close  string `json:"5. adjusted close"`
+		Volume     string `json:"6. volume"`
+		Div_amount string `json:"7. dividend amount"`
+		Split_coef string `json:"8. split coefficient"`
+	}
+
+	type Dailydate struct {
+		time.Time
+	}
+
 	type Daily struct {
 		MetaData `json:"Meta Data"`
+		DD       map[string]Dailydata `json:"Time Series (Daily)"`
 	}
 
 	/* type Daily struct {
@@ -55,7 +71,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	fmt.Printf("body = %v", string(body))
+	//fmt.Printf("body = %v", string(body))
 	//outputs: {"success":true,"message":"","result":["High":0.43600000,"Low":0.43003737],"Created":"2017-06-25T03:06:46.83"}]}
 
 	var summary = new(Daily)
@@ -65,8 +81,8 @@ func main() {
 		//outputs: whoops: <nil>
 	}
 
-	fmt.Printf("\nblah %s \n", summary.MetaData.Info)
+	//fmt.Printf("\nblah %s \n", summary.DD)
 
-	fmt.Printf("%+v\n", summary)
+	fmt.Printf("%+v\n", summary.DD)
 
 }
