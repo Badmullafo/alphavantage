@@ -1,3 +1,3 @@
-module github.com/Badmullafo/alphavantage
+module server
 
 go 1.16

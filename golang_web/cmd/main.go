@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/Badmullafo/alphavantage/golang_web/pkg/request@golang"
 	"log"
 	"net/http"
-
-	_ "github.com/Badmullafo/alphavantage/golang_web/pkg/get"
 )
 
 func main() {
