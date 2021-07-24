@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/Badmullafo/golang_web/pkg/get"
+	_ "github.com/Badmullafo/alphavantage/golang_web/pkg/get"
 )
 
 func main() {
