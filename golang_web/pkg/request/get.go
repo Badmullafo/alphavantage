@@ -52,18 +52,20 @@ type Daily struct {
        },
 */
 
-func Get(apiKey, symbol, url string) *Daily {
+func Get(apiKey, symbol, url string) (*Daily, error) {
 
 	fmt.Println("Geting data from", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)
+		return nil, err
 	}
 
-	body, err2 := ioutil.ReadAll(resp.Body)
-	if err2 != nil {
-		panic(err.Error())
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
 	}
 
 	//fmt.Printf("body = %v", string(body))
@@ -71,14 +73,13 @@ func Get(apiKey, symbol, url string) *Daily {
 
 	var summary = new(Daily)
 
-	err3 := json.Unmarshal(body, &summary)
-	if err3 != nil {
-		fmt.Println("whoops:", err3)
-		//outputs: whoops: <nil>
+	jsonerr := json.Unmarshal(body, &summary)
+	if err != nil {
+		return nil, jsonerr
 	}
 
 	//fmt.Printf("%+v\n", summary.DD)
 
-	return summary
+	return summary, nil
 
 }

@@ -1,10 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"log"
-	"net/http"
+	_ "net/http"
 )
 
 func main() {
@@ -12,12 +13,21 @@ func main() {
 	apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := "https://www.alphavantage.co/query?apikey=" + apiKey + "&function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + symbol
 
-	doget := get.Get(apiKey, symbol, url)
+	doget, err := get.Get(apiKey, symbol, url)
 
-	fmt.Printf("%+v\n", doget)
-
-	fmt.Printf("Starting server at port 8080\n")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	prettyJSON, err := json.MarshalIndent(doget, "", "    ")
+	if err != nil {
+		log.Fatal("Failed to generate json", err)
+	}
+	fmt.Printf("%s\n", string(prettyJSON))
+
+	fmt.Printf("Starting server at port 8080\n")
+	/*if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal(err)
+	}
+	*/
 }
