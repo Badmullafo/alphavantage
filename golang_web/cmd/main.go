@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"log"
 	_ "net/http"
+
+	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := "https://www.alphavantage.co/query?apikey=" + apiKey + "&function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + symbol
 
-	doget, err := get.Get(apiKey, symbol, url)
+	doget, err := request.Get(apiKey, symbol, url)
 
 	if err != nil {
 		log.Fatal(err)
