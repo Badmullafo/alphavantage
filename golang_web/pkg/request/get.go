@@ -4,8 +4,8 @@ import (
 	//   "bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	_ "io/ioutil"
+	_ "log"
 	"net/http"
 	"time"
 )
@@ -24,7 +24,7 @@ type Dailydata struct {
 	Low        string `json:"3. low"`
 	Close      string `json:"4. close"`
 	Adj_close  string `json:"5. adjusted close"`
-	Volume     string `json:"6. volume"`
+	Volume     int64  `json:"6. volume"` // `json:"id,string,omitempty"`
 	Div_amount string `json:"7. dividend amount"`
 	Split_coef string `json:"8. split coefficient"`
 }
@@ -52,34 +52,26 @@ type Daily struct {
        },
 */
 
-func Get(apiKey, symbol, url string) (*Daily, error) {
+func GetJson(url string, jsonobj *Daily) error {
 
 	fmt.Println("Geting data from", url)
+	var myClient = &http.Client{Timeout: 10 * time.Second}
 
-	resp, err := http.Get(url)
+	r, err := myClient.Get(url)
 	if err != nil {
-		log.Fatalln(err)
-		return nil, err
+		return err
+	}
+	defer r.Body.Close()
+
+	decoder := json.NewDecoder(r.Body)
+
+	if err := decoder.Decode(jsonobj); err != nil {
+		return err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
-		return nil, err
+		return err
 	}
 
-	//fmt.Printf("body = %v", string(body))
-	//outputs: {"success":true,"message":"","result":["High":0.43600000,"Low":0.43003737],"Created":"2017-06-25T03:06:46.83"}]}
-
-	var summary = new(Daily)
-
-	jsonerr := json.Unmarshal(body, &summary)
-	if err != nil {
-		return nil, jsonerr
-	}
-
-	//fmt.Printf("%+v\n", summary.DD)
-
-	return summary, nil
-
+	return nil
 }

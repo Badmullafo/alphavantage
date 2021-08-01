@@ -14,13 +14,15 @@ func main() {
 	apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := "https://www.alphavantage.co/query?apikey=" + apiKey + "&function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + symbol
 
-	doget, err := request.Get(apiKey, symbol, url)
+	var summary = request.Daily{}
+
+	err := request.GetJson(url, &summary)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	prettyJSON, err := json.MarshalIndent(doget, "", "    ")
+	prettyJSON, err := json.MarshalIndent(summary, "", "    ")
 	if err != nil {
 		log.Fatal("Failed to generate json", err)
 	}
