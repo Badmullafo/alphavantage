@@ -2,4 +2,8 @@ module github.com/Badmullafo/alphavantage/golang_web
 
 go 1.16
 
-require github.com/tidwall/gjson v1.8.1 // indirect
+require (
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
+	github.com/tidwall/gjson v1.8.1
+)
