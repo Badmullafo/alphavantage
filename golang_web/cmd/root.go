@@ -46,16 +46,15 @@ func init() {
 }
 
 func initConfig() {
-	configFile = ".cobra-cli-samples.yml"
+	configFile = "api-examples.yml"
 	viper.SetConfigType("yaml")
 	viper.SetConfigFile(configFile)
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("COBRACLISAMPLES")
-	helper.HandleError(viper.BindEnv("API_KEY"))
-	helper.HandleError(viper.BindEnv("API_SECRET"))
-	helper.HandleError(viper.BindEnv("USERNAME"))
-	helper.HandleError(viper.BindEnv("PASSWORD"))
+	helper.HandleError(viper.BindEnv("symbol"))
+	helper.HandleError(viper.BindEnv("apiKey"))
+	helper.HandleError(viper.BindEnv("nDays"))
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using configuration file: ", viper.ConfigFileUsed())
