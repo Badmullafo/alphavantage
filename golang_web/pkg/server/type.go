@@ -1,3 +1,6 @@
+package server
+
+import "time"
 
 type MetaData struct {
 	Info           string `json:"1. Information"`

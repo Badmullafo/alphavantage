@@ -74,4 +74,5 @@ func GetJson(apiKey, symbol string) error {
 
 		return true // keep iterating
 	})
+	return nil
 }
