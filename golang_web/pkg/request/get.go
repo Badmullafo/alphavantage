@@ -1,13 +1,11 @@
-package request
+package main
 
 import (
 	//   "bytes"
 
 	"fmt"
 	"io/ioutil"
-	_ "io/ioutil"
 	"log"
-	_ "log"
 	"net/http"
 	"time"
 
@@ -22,7 +20,7 @@ const (
 	rtype     = "&function=TIME_SERIES_DAILY_ADJUSTED&symbol="
 )
 
-func GetJson(apiKey, symbol string) error {
+func GetJson(apiKey, symbol string, nDays int) (string, error) {
 
 	//apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := urlS + apiKey + rtype + symbol
@@ -36,20 +34,20 @@ func GetJson(apiKey, symbol string) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)
-		return err
+		return "", err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
-		return err
+		return "", err
 	}
 
 	md := gjson.GetBytes(body, "Time Series (Daily)")
 
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return "", err
 	}
 
 	md.ForEach(func(key, value gjson.Result) bool {
@@ -63,7 +61,9 @@ func GetJson(apiKey, symbol string) error {
 
 		diff := currentTime.Sub(date).Hours()
 
-		if diff < 48.0 {
+		daysH := float64(nDays) * 24
+
+		if diff < daysH {
 
 			//In hours
 			fmt.Printf("Hours: %f\n", diff)
@@ -74,5 +74,11 @@ func GetJson(apiKey, symbol string) error {
 
 		return true // keep iterating
 	})
-	return nil
+	return "", nil
+}
+
+func main() {
+
+	GetJson("RABZYXWVHB8MX5GO", "IBM", 3)
+
 }

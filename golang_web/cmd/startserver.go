@@ -24,7 +24,7 @@ import (
 var startServer = &cobra.Command{
 	Use:   "startserver",
 	Short: "This command starts the server",
-	Long:  `This command starts the server to server api`,
+	Long:  `This command starts the server to serve an api`,
 	Run: func(cmd *cobra.Command, args []string) {
 		server.Startserver()
 	},
