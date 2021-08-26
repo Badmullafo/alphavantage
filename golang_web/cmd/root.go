@@ -25,13 +25,13 @@ var configFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "cli",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "This is a tool to run an api server",
+	Short: "Use this command to manage a web golang server",
+	Long: `
+*** Use this command to manage a web golang server ***
+
+It will eventually be build and used within a container. It's fairly pointless doing it this way as
+I could have just used container environment variables, however I am trying to learn cobra`,
 }
 
 func Execute() {
