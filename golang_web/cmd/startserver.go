@@ -15,9 +15,10 @@
 package cmd
 
 import (
-	_ "fmt"
+	_ "errors"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
 	"github.com/spf13/cobra"
+	_ "github.com/spf13/viper"
 )
 
 // byeCmd represents the bye command
@@ -25,13 +26,19 @@ var startServer = &cobra.Command{
 	Use:   "startserver",
 	Short: "This command starts the server",
 	Long:  `This command starts the server to serve an api`,
-	Run: func(cmd *cobra.Command, args []string) {
-		server.Startserver()
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		key, _ := cmd.Flags().GetString("key")
+
+		server.Startserver(key, "IBM", 3)
+
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startServer)
+	startServer.Flags().StringP("key", "k", "RABZYXWVHB8MX5GO", "Pass in your api key")
 
 	// Here you will define your flags and configuration settings.
 

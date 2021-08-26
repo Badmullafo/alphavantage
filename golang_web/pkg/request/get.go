@@ -36,6 +36,8 @@ func GetJson(apiKey, symbol string, nDays int) (float64, error) {
 		return 0.0, err
 	}
 
+	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)

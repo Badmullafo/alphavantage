@@ -5,9 +5,11 @@ import (
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 )
 
-func Startserver() {
+func Startserver(key, stock string, nDays int) {
 
-	total, err := request.GetJson("RABZYXWVHB8MX5GO", "IBM", 3)
+	fmt.Println("The key is:", key)
+
+	total, err := request.GetJson(key, stock, nDays)
 
 	if err != nil {
 		return

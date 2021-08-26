@@ -25,7 +25,7 @@ var configFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "This is a tool to run an api server",
+	Use:   "startserver",
 	Short: "Use this command to manage a web golang server",
 	Long: `
 *** Use this command to manage a web golang server ***
