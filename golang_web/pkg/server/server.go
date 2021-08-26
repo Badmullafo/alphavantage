@@ -1,21 +1,18 @@
 package server
 
 import (
-	_ "encoding/json"
 	"fmt"
-
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 )
 
 func Startserver() {
 
-	fmt.Println("Scraping data")
-
-	json, err := request.GetJson("RABZYXWVHB8MX5GO", "IBM")
+	total, err := request.GetJson("RABZYXWVHB8MX5GO", "IBM", 3)
 
 	if err != nil {
-		fmt.Println("Something went wrong with the request")
 		return
+	} else {
+		fmt.Printf("The total is %.2f\n", total)
 	}
 
 	fmt.Printf("Starting server at port 8080\n")

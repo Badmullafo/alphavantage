@@ -1,15 +1,12 @@
-package main
+package request
 
 import (
-	//   "bytes"
-
 	"fmt"
+	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 const (
@@ -20,7 +17,9 @@ const (
 	rtype     = "&function=TIME_SERIES_DAILY_ADJUSTED&symbol="
 )
 
-func GetJson(apiKey, symbol string, nDays int) (string, error) {
+var total float64
+
+func GetJson(apiKey, symbol string, nDays int) (float64, error) {
 
 	//apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := urlS + apiKey + rtype + symbol
@@ -34,23 +33,19 @@ func GetJson(apiKey, symbol string, nDays int) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)
-		return "", err
+		return 0.0, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
-		return "", err
+		return 0.0, err
 	}
 
-	md := gjson.GetBytes(body, "Time Series (Daily)")
+	tsd := gjson.GetBytes(body, "Time Series (Daily)")
 
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	md.ForEach(func(key, value gjson.Result) bool {
+	//Outer loop
+	tsd.ForEach(func(key, value gjson.Result) bool {
 
 		date, err := time.Parse(layoutISO, key.String())
 		// fmt.Println(date, err)
@@ -61,24 +56,28 @@ func GetJson(apiKey, symbol string, nDays int) (string, error) {
 
 		diff := currentTime.Sub(date).Hours()
 
+		//Convert days to hours
 		daysH := float64(nDays) * 24
 
 		if diff < daysH {
 
 			//In hours
-			fmt.Printf("Hours: %f\n", diff)
+			//fmt.Printf("Hours: %f\n", diff)
 			//	fmt.Printf("Hours: %f\n", days)
 
-			println(value.String())
-		}
+			//println(value.String())
+			//Inner loop
+			value.ForEach(func(key, value gjson.Result) bool {
 
+				if k := key.String(); k == "4. close" {
+					v := value.Float()
+					fmt.Printf("The key is:%s, the value is:%f\n", k, v)
+					total = total + v
+				}
+				return true // keep iterating
+			})
+		}
 		return true // keep iterating
 	})
-	return "", nil
-}
-
-func main() {
-
-	GetJson("RABZYXWVHB8MX5GO", "IBM", 3)
-
+	return total, nil
 }
