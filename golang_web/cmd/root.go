@@ -13,9 +13,12 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/Badmullafo/alphavantage/golang_web/pkg/helper"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var configFile string
@@ -32,8 +35,38 @@ I could have just used container environment variables, however I am trying to l
 }
 
 func Execute() {
+	initConfig()
 	if err := rootCmd.Execute(); err != nil {
 		//  fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func initConfig() {
+	configFile = "api-examples.yml"
+	viper.AddConfigPath("..")
+	viper.SetConfigType("yaml")
+	viper.SetConfigFile(configFile)
+	viper.AutomaticEnv()
+	viper.SetEnvPrefix("VIPER")
+
+	//fmt.Println("Hello")
+
+	for key, element := range viper.AllSettings() {
+		fmt.Println("Key:", key, "=>", "Element:", element)
+	}
+
+	helper.HandleError(viper.BindEnv("stock"))
+	helper.HandleError(viper.BindEnv("apikey"))
+	helper.HandleError(viper.BindEnv("ndays"))
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Config file not found; ignore error if desired
+			fmt.Println("Config file not found")
+		} else {
+			// Config file was found but another error was produced
+			fmt.Println("Config file not found , error:", err)
+		}
 	}
 }
