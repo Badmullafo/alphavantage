@@ -1,12 +1,14 @@
 package request
 
 import (
+	"errors"
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 const (
@@ -36,12 +38,20 @@ func GetJson(apiKey, symbol string, nDays int) (float64, error) {
 		return 0.0, err
 	}
 
+	//fmt.Printf("Response body %#v", resp.Body)
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 		return 0.0, err
+	}
+
+	// If there is an error message return here
+	if err := gjson.GetBytes(body, "Error Message"); err.String() != "" {
+		//fmt.Printf("The error is: %v", err.String())
+		return 0.0, errors.New(err.String())
 	}
 
 	tsd := gjson.GetBytes(body, "Time Series (Daily)")
@@ -81,5 +91,7 @@ func GetJson(apiKey, symbol string, nDays int) (float64, error) {
 		}
 		return true // keep iterating
 	})
+
 	return total, nil
+
 }
