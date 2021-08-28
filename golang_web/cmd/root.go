@@ -22,10 +22,11 @@ import (
 )
 
 var configFile string
+var pRootFlag bool = true
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "startserver",
+	Use:   "server",
 	Short: "Use this command to manage a web golang server",
 	Long: `
 *** Use this command to manage a web golang server ***
@@ -43,6 +44,8 @@ func Execute() {
 }
 
 func initConfig() {
+	rootCmd.PersistentFlags().BoolVarP(&pRootFlag, "root", "p", false, "The root flag")
+	rootCmd.AddCommand(srvCmd)
 	configFile = "api-examples.yml"
 	viper.AddConfigPath("..")
 	viper.SetConfigType("yaml")
@@ -52,8 +55,8 @@ func initConfig() {
 
 	//fmt.Println("Hello")
 
-	for key, element := range viper.AllSettings() {
-		fmt.Println("Key:", key, "=>", "Element:", element)
+	for e := range viper.AllSettings() {
+		fmt.Println("settings", e)
 	}
 
 	helper.HandleError(viper.BindEnv("stock"))
