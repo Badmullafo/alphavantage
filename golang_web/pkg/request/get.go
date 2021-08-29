@@ -19,9 +19,11 @@ const (
 	rtype     = "&function=TIME_SERIES_DAILY_ADJUSTED&symbol="
 )
 
-var dmap = make(map[time.Time]interface{})
+var dmap = make(map[time.Time]float64)
 
-func GetJson(apiKey, symbol string, nDays int) (map[time.Time]interface{}, error) {
+type GetJsonDef func(string, string, int) (map[time.Time]float64, error)
+
+func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
 
 	//apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := urlS + apiKey + rtype + symbol
@@ -70,11 +72,6 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]interface{}, error
 
 		if diff < daysH {
 
-			//In hours
-			//fmt.Printf("Hours: %f\n", diff)
-			//	fmt.Printf("Hours: %f\n", days)
-
-			//println(value.String())
 			//Inner loop
 			value.ForEach(func(key, value gjson.Result) bool {
 
@@ -92,20 +89,19 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]interface{}, error
 	return dmap, nil
 }
 
-func Getot(dmap map[time.Time]interface{}) float64 {
+func Getot(f GetJsonDef, apiKey, symbol string, nDays int) (float64, error) {
+
+	// Use the GetJson function
+	dmap, err := f(apiKey, symbol, nDays)
+
+	if err != nil {
+		return 0.0, err
+	}
 
 	var total float64
 
 	for _, value := range dmap {
-
-		switch t := value.(type) {
-		default:
-			fmt.Printf("unexpected type %T\n", t) // %T prints whatever type t has
-		case float64:
-			v := value.(float64)
-			total = total + v
-		}
-
+		total = total + value
 	}
-	return total
+	return total, nil
 }

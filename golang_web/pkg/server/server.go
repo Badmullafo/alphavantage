@@ -10,9 +10,7 @@ func Startserver(key, stock string, nDays int) error {
 
 	//fmt.Println("The key is:", key)
 
-	valueMap, err := request.GetJson(key, stock, nDays)
-
-	total := request.Getot(valueMap)
+	total, err := request.Getot(request.GetJson, key, stock, nDays)
 
 	if err != nil {
 		return err
