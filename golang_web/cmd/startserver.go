@@ -17,6 +17,7 @@ package cmd
 import (
 	_ "errors"
 
+	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
 	"github.com/spf13/cobra"
 )
@@ -33,11 +34,13 @@ var srvCmd = &cobra.Command{
 		stock, _ := cmd.Flags().GetString("stock")
 		ndays, _ := cmd.Flags().GetInt("ndays")
 
-		err := server.Startserver(apikey, stock, ndays)
+		total, err := request.Getot(request.GetJson, apikey, stock, ndays)
 
 		if err != nil {
 			return err
 		}
+
+		server.Startserver(total)
 
 		return nil
 	},

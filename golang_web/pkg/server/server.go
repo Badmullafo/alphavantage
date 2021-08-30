@@ -2,21 +2,13 @@ package server
 
 import (
 	"fmt"
-
-	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 )
 
-func Startserver(key, stock string, nDays int) error {
+func Startserver(value float64) error {
 
 	//fmt.Println("The key is:", key)
 
-	total, err := request.Getot(request.GetJson, key, stock, nDays)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("The total is %.2f\n", total)
+	fmt.Printf("The total is %.2f\n", value)
 
 	fmt.Printf("Starting server at port 8080\n")
 	/*if err := http.ListenAndServe(":8080", nil); err != nil {
