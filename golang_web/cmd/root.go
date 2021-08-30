@@ -16,24 +16,25 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Badmullafo/alphavantage/golang_web/pkg/helper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var configFile string
-var pRootFlag bool = true
+//var pRootFlag bool = true
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "server",
-	Short: "Use this command to manage a web golang server",
-	Long: `
+var (
+	configFile string
+	rootCmd    = &cobra.Command{
+		Use:   "server",
+		Short: "Use this command to manage a web golang server",
+		Long: `
 *** Use this command to manage a web golang server ***
 
 It will eventually be build and used within a container. It's fairly pointless doing it this way as
 I could have just used container environment variables, however I am trying to learn cobra`,
-}
+	}
+)
 
 func Execute() {
 	initConfig()
@@ -42,34 +43,41 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "api-examples.yml", "config file (default is api-examples.yml)")
+	rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
+
+	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+
+	//viper.BindPFlag("apikey", srvCmd.Flags().Lookup("apikey"))
+
+	rootCmd.AddCommand(srvCmd)
+	//rootCmd.AddCommand(initCmd)
+}
 
 func initConfig() {
-	rootCmd.PersistentFlags().BoolVarP(&pRootFlag, "root", "p", false, "The root flag")
-	rootCmd.AddCommand(srvCmd)
-	configFile = "api-examples.yml"
-	viper.AddConfigPath("..")
-	viper.SetConfigType("yaml")
-	viper.SetConfigFile(configFile)
+	if configFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(configFile)
+	} else {
+		// Find home directory.
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
+
+		// Search config in home directory with name ".cobra" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".cobra")
+	}
+
 	viper.AutomaticEnv()
-	viper.SetEnvPrefix("VIPER")
 
-	//fmt.Println("Hello")
-
-	for e := range viper.AllSettings() {
-		fmt.Println("settings", e)
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		fmt.Println("The config file was not used", err)
 	}
 
-	helper.HandleError(viper.BindEnv("stock"))
-	helper.HandleError(viper.BindEnv("apikey"))
-	helper.HandleError(viper.BindEnv("ndays"))
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired
-			fmt.Println("Config file not found")
-		} else {
-			// Config file was found but another error was produced
-			fmt.Println("Config file not found , error:", err)
-		}
-	}
 }

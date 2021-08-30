@@ -20,6 +20,7 @@ import (
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // byeCmd represents the bye command
@@ -30,9 +31,21 @@ var srvCmd = &cobra.Command{
 	Long:  `This command starts the server to serve an api`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		//If its not defined at command line look it up from viper
 		apikey, _ := cmd.Flags().GetString("apikey")
+		if apikey == "" {
+			apikey = viper.GetViper().GetString("apikey")
+		}
+
 		stock, _ := cmd.Flags().GetString("stock")
+		if stock == "" {
+			stock = viper.GetViper().GetString("stock")
+		}
+
 		ndays, _ := cmd.Flags().GetInt("ndays")
+		if ndays == 0 {
+			ndays = viper.GetViper().GetInt("ndays")
+		}
 
 		total, err := request.Getot(request.GetJson, apikey, stock, ndays)
 
@@ -50,9 +63,9 @@ func init() {
 
 	//cobra.OnInitialize(initConfig)
 
-	srvCmd.Flags().StringP("apikey", "k", "RABZYXWVHB8MX5GO", "Pass in your api apikey")
+	srvCmd.Flags().StringP("apikey", "k", "", "Pass in your api apikey")
 	srvCmd.Flags().StringP("stock", "s", "", "Pass in the stock you want")
-	srvCmd.Flags().IntP("ndays", "n", 3, "The number of days you want")
+	srvCmd.Flags().IntP("ndays", "n", 0, "The number of days you want")
 
 	// Here you will define your flags and configuration settings.
 
