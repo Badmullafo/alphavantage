@@ -21,7 +21,7 @@ func (h *totalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "the count is %d\n", h.c)
 }
 
-func Startserver(value float64) {
+func Startserver(path string, value float64) {
 
 	fmt.Printf("Starting server at port 8080\n")
 
@@ -29,7 +29,7 @@ func Startserver(value float64) {
 		message: value,
 	}
 
-	http.Handle("/total", total)
+	http.Handle(path, total)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
