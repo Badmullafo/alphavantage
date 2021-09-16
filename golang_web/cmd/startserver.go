@@ -54,8 +54,7 @@ var srvCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-
-			server.Startserver(total)
+			server.Startserver("/"+action, total)
 		default:
 			return fmt.Errorf("you must choose total")
 		}
