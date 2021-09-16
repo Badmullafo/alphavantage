@@ -1,6 +1,7 @@
 package request
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -17,6 +18,7 @@ const (
 	layoutUS  = "January 2, 2006"
 	urlS      = "https://www.alphavantage.co/query?apikey="
 	rtype     = "&function=TIME_SERIES_DAILY_ADJUSTED&symbol="
+	timeout   = 1000
 )
 
 var dmap = make(map[time.Time]float64)
@@ -34,26 +36,31 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
 	currentTime := time.Now().In(loc)
 	fmt.Println("Geting data from", url)
 
-	resp, err := http.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatalln(err)
-		return dmap, err
+		log.Fatal(err)
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Millisecond*timeout))
+	defer cancel()
+	req = req.WithContext(ctx)
 
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	c := &http.Client{}
+	res, err := c.Do(req)
 	if err != nil {
-		log.Fatalln(err)
-		return dmap, err
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	out, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// If there is an error message return here
-	if err := gjson.GetBytes(body, "Error Message"); err.String() != "" {
+	if err := gjson.GetBytes(out, "Error Message"); err.String() != "" {
 		return dmap, errors.New(err.String())
 	}
 
-	tsd := gjson.GetBytes(body, "Time Series (Daily)")
+	tsd := gjson.GetBytes(out, "Time Series (Daily)")
 
 	//Outer loop
 	tsd.ForEach(func(key, value gjson.Result) bool {
