@@ -16,6 +16,7 @@ package cmd
 
 import (
 	_ "errors"
+	"fmt"
 
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
@@ -27,7 +28,7 @@ import (
 var srvCmd = &cobra.Command{
 	Use:   "startserver",
 	Short: "This command starts the server",
-	Args:  cobra.ExactValidArgs(0),
+	Args:  cobra.ExactValidArgs(1),
 	Long:  `This command starts the server to serve an api`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -47,13 +48,16 @@ var srvCmd = &cobra.Command{
 			ndays = viper.GetViper().GetInt("ndays")
 		}
 
-		total, err := request.Getot(request.GetJson, apikey, stock, ndays)
-
-		if err != nil {
-			return err
+		switch action := args[0]; action {
+		case "total":
+			total, err := request.Getot(request.GetJson, apikey, stock, ndays)
+			if err != nil {
+				return err
+			}
+			server.Startserver(total)
+		default:
+			return fmt.Errorf("you must choose total")
 		}
-
-		server.Startserver(total)
 
 		return nil
 	},
