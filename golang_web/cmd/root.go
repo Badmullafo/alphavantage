@@ -37,7 +37,7 @@ I could have just used container environment variables, however I am trying to l
 )
 
 func Execute() {
-	initConfig()
+	//initConfig()
 	if err := rootCmd.Execute(); err != nil {
 		//  fmt.Println(err)
 		os.Exit(1)
@@ -75,7 +75,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		fmt.Printf("Using config file:%s all keys%v\n", viper.ConfigFileUsed(), viper.AllKeys())
 	} else {
 		fmt.Println("The config file was not used", err)
 	}
