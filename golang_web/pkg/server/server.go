@@ -2,18 +2,34 @@ package server
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"sync"
 )
 
-func Startserver(value float64) error {
+type totalHandler struct {
+	mu      sync.Mutex // guards n
+	message float64
+	c       int
+}
 
-	//fmt.Println("The key is:", key)
+func (h *totalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.c++
+	fmt.Fprintf(w, "the total is %f\n", h.message)
+	fmt.Fprintf(w, "the count is %d\n", h.c)
+}
 
-	fmt.Printf("The total is %.2f\n", value)
+func Startserver(value float64) {
 
 	fmt.Printf("Starting server at port 8080\n")
-	/*if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal(err)
+
+	total := &totalHandler{
+		message: value,
 	}
-	*/
-	return nil
+
+	http.Handle("/total", total)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
