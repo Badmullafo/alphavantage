@@ -48,9 +48,24 @@ var srvCmd = &cobra.Command{
 			ndays = viper.GetViper().GetInt("ndays")
 		}
 
+		r, err := request.GetJson(apikey, stock, ndays)
+
+		if err != nil {
+			return err
+		}
+
 		switch action := args[0]; action {
 		case "total":
-			total, err := request.Getot(request.GetJson, apikey, stock, ndays)
+			total, err := r.Getot()
+
+			if err != nil {
+				return err
+			}
+			server.Startserver("/"+action, total)
+
+		case "average":
+			total, err := r.Getavg()
+
 			if err != nil {
 				return err
 			}

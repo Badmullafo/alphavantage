@@ -21,11 +21,14 @@ const (
 	timeout   = 1000
 )
 
-var dmap = make(map[time.Time]float64)
+type result struct {
+	symbol  string
+	ndays   int
+	dtype   string
+	dateval map[time.Time]float64
+}
 
-type GetJsonDef func(string, string, int) (map[time.Time]float64, error)
-
-func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
+func GetJson(apiKey, symbol string, nDays int) (result, error) {
 
 	//apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := urlS + apiKey + rtype + symbol
@@ -55,9 +58,10 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
 		log.Fatal(err)
 	}
 
+	getRes := result{symbol, nDays, "", make(map[time.Time]float64)}
 	// If there is an error message return here
 	if err := gjson.GetBytes(out, "Error Message"); err.String() != "" {
-		return dmap, errors.New(err.String())
+		return result{}, errors.New(err.String())
 	}
 
 	tsd := gjson.GetBytes(out, "Time Series (Daily)")
@@ -85,7 +89,7 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
 				if k := key.String(); k == "4. close" {
 					v := value.Float()
 					//fmt.Printf("The key is:%s, the value is:%f\n", k, v)
-					dmap[date] = v
+					getRes.dateval[date] = v
 				}
 				return true // keep iterating
 			})
@@ -93,22 +97,23 @@ func GetJson(apiKey, symbol string, nDays int) (map[time.Time]float64, error) {
 		return true // keep iterating
 	})
 
-	return dmap, nil
+	return getRes, nil
 }
 
-func Getot(f GetJsonDef, apiKey, symbol string, nDays int) (float64, error) {
-
-	// Use the GetJson function
-	dmap, err := f(apiKey, symbol, nDays)
-
-	if err != nil {
-		return 0.0, err
-	}
+func (r *result) Getot() (float64, error) {
 
 	var total float64
 
-	for _, value := range dmap {
+	for _, value := range r.dateval {
 		total = total + value
 	}
 	return total, nil
+}
+
+func (r *result) Getavg() (float64, error) {
+
+	tot, _ := r.Getot()
+	avg := tot / float64(len(r.dateval))
+
+	return avg, nil
 }
