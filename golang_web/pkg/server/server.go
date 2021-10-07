@@ -8,37 +8,39 @@ import (
 	"time"
 )
 
-type totalHandler struct {
-	mu      sync.Mutex // guards n
-	message float64
-	c       int
+type resultHandler struct {
+	mu    sync.Mutex // guards n
+	fval  float64
+	vtype string
+	c     int
 }
 
-func (h *totalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.mu.Lock()
+func (h *resultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer h.mu.Unlock()
+	h.mu.Lock()
 	h.c++
-	fmt.Fprintf(w, "the total is %.2f\n", h.message)
-	fmt.Fprintf(w, "the count is %d\n", h.c)
+	fmt.Fprintf(w, "The %s is %.2f\n", h.vtype, h.fval)
+	fmt.Fprintf(w, "The count is %d\n", h.c)
 }
 
-func Startserver(path string, value float64) {
+func Startserver(path, vtype string, value float64) {
 
 	fmt.Printf("Starting server at port 8080\n")
 
-	total := &totalHandler{
-		message: value,
+	h := &resultHandler{
+		vtype: vtype,
+		fval:  value,
 	}
 
 	s := &http.Server{
 		Addr:           ":8080",
-		Handler:        total,
+		Handler:        h,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	http.Handle(path, total)
+	http.Handle(path, h)
 	log.Fatal(s.ListenAndServe())
 
 }

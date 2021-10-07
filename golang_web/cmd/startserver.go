@@ -61,15 +61,15 @@ var srvCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			server.Startserver("/"+action, total)
+			server.Startserver("/"+action, action, total)
 
 		case "average":
-			total, err := r.Getavg()
+			avg, err := r.Getavg()
 
 			if err != nil {
 				return err
 			}
-			server.Startserver("/"+action, total)
+			server.Startserver("/"+action, action, avg)
 		default:
 			return fmt.Errorf("you must choose total")
 		}
