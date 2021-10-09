@@ -21,17 +21,18 @@ const (
 	timeout   = 1000
 )
 
-type result struct {
-	symbol  string
-	ndays   int
-	dtype   string
-	dateval map[time.Time]float64
+type Result struct {
+	Symbol  string                // the stock name .e.g. FORG
+	Ndays   int                   // Number of days data to get
+	Dtype   string                // data type - total/average
+	Dateval map[time.Time]float64 // the date stamp of values returned
+	Value   float64
 }
 
-func GetJson(apiKey, symbol string, nDays int) (result, error) {
+func GetJson(apiKey, Symbol string, Ndays int) (*Result, error) {
 
-	//apiKey, symbol := "RABZYXWVHB8MX5GO", "IBM"
-	url := urlS + apiKey + rtype + symbol
+	//apiKey, Symbol := "RABZYXWVHB8MX5GO", "IBM"
+	url := urlS + apiKey + rtype + Symbol
 	//init the loc
 	loc, _ := time.LoadLocation(tz)
 
@@ -58,10 +59,10 @@ func GetJson(apiKey, symbol string, nDays int) (result, error) {
 		log.Fatal(err)
 	}
 
-	getRes := result{symbol, nDays, "", make(map[time.Time]float64)}
+	getRes := &Result{Symbol, Ndays, "", make(map[time.Time]float64), 0.0}
 	// If there is an error message return here
 	if err := gjson.GetBytes(out, "Error Message"); err.String() != "" {
-		return result{}, errors.New(err.String())
+		return nil, errors.New(err.String())
 	}
 
 	tsd := gjson.GetBytes(out, "Time Series (Daily)")
@@ -79,7 +80,7 @@ func GetJson(apiKey, symbol string, nDays int) (result, error) {
 		diff := currentTime.Sub(date).Hours()
 
 		//Convert days to hours
-		daysH := float64(nDays) * 24
+		daysH := float64(Ndays) * 24
 
 		if diff < daysH {
 
@@ -89,7 +90,7 @@ func GetJson(apiKey, symbol string, nDays int) (result, error) {
 				if k := key.String(); k == "4. close" {
 					v := value.Float()
 					//fmt.Printf("The key is:%s, the value is:%f\n", k, v)
-					getRes.dateval[date] = v
+					getRes.Dateval[date] = v
 				}
 				return true // keep iterating
 			})
@@ -100,20 +101,20 @@ func GetJson(apiKey, symbol string, nDays int) (result, error) {
 	return getRes, nil
 }
 
-func (r *result) Getot() (float64, error) {
+func (r *Result) Getot() {
 
 	var total float64
-
-	for _, value := range r.dateval {
+	for _, value := range r.Dateval {
 		total = total + value
 	}
-	return total, nil
+
+	r.Value = total
+	r.Dtype = "total"
 }
 
-func (r *result) Getavg() (float64, error) {
+func (r *Result) Getavg() {
+	r.Getot()
+	r.Value = r.Value / float64(len(r.Dateval))
+	r.Dtype = "average"
 
-	tot, _ := r.Getot()
-	avg := tot / float64(len(r.dateval))
-
-	return avg, nil
 }
