@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,8 @@ type resultHandler struct {
 	c   int
 	res request.Result
 }
+
+var doOnce sync.Once
 
 type Handlers interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
@@ -33,11 +36,11 @@ func newHandler(r *request.Result) Handlers {
 	return &resultHandler{res: *r}
 }
 
-func Startserver(r *request.Result) {
+func Startserver(ctx context.Context, r *request.Result) {
 
-	fmt.Printf("Starting server at port 8080\n")
+	log.Printf("Starting server at port 8080\n")
 
-	s := &http.Server{
+	srv := &http.Server{
 		Addr:           ":8080",
 		Handler:        newHandler(r),
 		ReadTimeout:    10 * time.Second,
@@ -45,7 +48,31 @@ func Startserver(r *request.Result) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	http.Handle("/"+r.Dtype, s.Handler)
-	log.Fatal(s.ListenAndServe())
+	doOnce.Do(func() {
+		http.Handle("/"+r.Dtype, srv.Handler)
+	})
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen:%+s\n", err)
+		}
+	}()
+
+	log.Printf("server started")
+
+	<-ctx.Done()
+
+	log.Printf("server stopped")
+
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := srv.Shutdown(ctxShutDown); err != nil {
+		log.Fatalf("server Shutdown Failed:%+s", err)
+	}
+
+	log.Printf("server exited properly")
 
 }

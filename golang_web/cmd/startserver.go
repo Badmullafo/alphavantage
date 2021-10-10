@@ -15,14 +15,18 @@
 package cmd
 
 import (
+	"context"
 	_ "errors"
 	"fmt"
+	"time"
 
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+const rs = 10
 
 // byeCmd represents the bye command
 var srvCmd = &cobra.Command{
@@ -48,23 +52,27 @@ var srvCmd = &cobra.Command{
 			ndays = viper.GetViper().GetInt("ndays")
 		}
 
-		r, err := request.GetJson(apikey, stock, ndays)
+		for {
+			r, err := request.GetJson(apikey, stock, ndays)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			switch action := args[0]; action {
+			case "total":
+				r.Getot()
+			case "average":
+				r.Getavg()
+			default:
+				return fmt.Errorf("you must choose total")
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*rs))
+			server.Startserver(ctx, r)
+			cancel()
 		}
-
-		switch action := args[0]; action {
-		case "total":
-			r.Getot()
-		case "average":
-			r.Getavg()
-		default:
-			return fmt.Errorf("you must choose total")
-		}
-
-		server.Startserver(r)
-		return nil
+		//return nil
 	},
 }
 
