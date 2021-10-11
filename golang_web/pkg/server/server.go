@@ -64,15 +64,13 @@ func Startserver(ctx context.Context, r *request.Result) {
 
 	log.Printf("server stopped")
 
-	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer func() {
-		cancel()
-	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	if err := srv.Shutdown(ctxShutDown); err != nil {
-		log.Fatalf("server Shutdown Failed:%+s", err)
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("shutdown error: %v\n", err)
+	} else {
+		log.Printf("gracefully stopped\n")
 	}
-
-	log.Printf("server exited properly")
 
 }
