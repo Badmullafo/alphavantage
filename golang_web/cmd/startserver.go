@@ -18,6 +18,7 @@ import (
 	"context"
 	_ "errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
@@ -26,7 +27,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-const rs = 10
+const rs = 20
+
+var wg sync.WaitGroup
 
 // byeCmd represents the bye command
 var srvCmd = &cobra.Command{
@@ -52,7 +55,22 @@ var srvCmd = &cobra.Command{
 			ndays = viper.GetViper().GetInt("ndays")
 		}
 
+		ctx := context.Background()
+		resultChan := make(chan *request.Result)
+
+		go func() {
+			fmt.Println("Inside go func")
+
+			// Create a new context, with its cancellation function
+			// from the original context
+			ctx, cancel := context.WithCancel(ctx)
+			server.Startserver(ctx, resultChan)
+			wg.Add(1)
+			cancel()
+		}()
+
 		for {
+			time.Sleep(time.Second * rs)
 			r, err := request.GetJson(apikey, stock, ndays)
 
 			if err != nil {
@@ -62,15 +80,13 @@ var srvCmd = &cobra.Command{
 			switch action := args[0]; action {
 			case "total":
 				r.Getot()
+				resultChan <- r
 			case "average":
 				r.Getavg()
+				resultChan <- r
 			default:
 				return fmt.Errorf("you must choose total")
 			}
-
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*rs))
-			server.Startserver(ctx, r)
-			cancel()
 		}
 		//return nil
 	},

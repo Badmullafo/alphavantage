@@ -36,7 +36,9 @@ func newHandler(r *request.Result) Handlers {
 	return &resultHandler{res: *r}
 }
 
-func Startserver(ctx context.Context, r *request.Result) {
+func Startserver(ctx context.Context, rChan <-chan *request.Result) {
+
+	r := <-rChan
 
 	log.Printf("Starting server at port 8080\n")
 
