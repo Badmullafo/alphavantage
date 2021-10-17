@@ -38,7 +38,7 @@ func GetJson(apiKey, Symbol string, Ndays int) (*Result, error) {
 
 	//set timezone,
 	currentTime := time.Now().In(loc)
-	fmt.Println("Geting data from", url)
+	fmt.Println("getting data from", url)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

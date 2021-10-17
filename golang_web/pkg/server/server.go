@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -27,9 +28,21 @@ func (h *resultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mu.Lock()
 	h.c++
 	h.mu.Unlock()
-	fmt.Fprintf(w, "The %s is %.2f\n", h.res.Dtype, h.res.Value)
-	fmt.Fprintf(w, "Stock symbol is %s\n", h.res.Symbol)
-	fmt.Fprintf(w, "The count is %d\n", h.c)
+
+	// Working Directory
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	parsedTemplate, _ := template.ParseFiles(wd + "/templates/layout.html")
+	err = parsedTemplate.Execute(w, h.res)
+	if err != nil {
+		log.Println("Error executing template :", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func newHandler(r *request.Result) Handlers {

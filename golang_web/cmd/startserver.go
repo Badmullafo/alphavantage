@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const rs = 20
+const rs = 5
 
 var wg sync.WaitGroup
 
