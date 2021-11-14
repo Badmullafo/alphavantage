@@ -2,14 +2,13 @@ package request
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/tidwall/gjson"
+	"encoding/json"
 )
 
 const (
@@ -29,7 +28,7 @@ type Result struct {
 	Value   float64
 }
 
-func GetJson(apiKey, Symbol string, Ndays int) (*Result, error) {
+func GetJson(apiKey, Symbol string, Ndays int) (*Daily, error) {
 
 	//apiKey, Symbol := "RABZYXWVHB8MX5GO", "IBM"
 	url := urlS + apiKey + rtype + Symbol
@@ -59,46 +58,13 @@ func GetJson(apiKey, Symbol string, Ndays int) (*Result, error) {
 		log.Fatal(err)
 	}
 
-	getRes := &Result{Symbol, Ndays, "", make(map[time.Time]float64), 0.0}
-	// If there is an error message return here
-	if err := gjson.GetBytes(out, "Error Message"); err.String() != "" {
-		return nil, errors.New(err.String())
-	}
+	d := Daily{}
 
-	tsd := gjson.GetBytes(out, "Time Series (Daily)")
+	fmt.Println("Unmarshalling", currentTime)
+	json.Unmarshal([]byte(out), &d)
 
-	//Outer loop
-	tsd.ForEach(func(key, value gjson.Result) bool {
+	return &d, nil
 
-		date, err := time.Parse(layoutISO, key.String())
-		// fmt.Println(date, err)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		diff := currentTime.Sub(date).Hours()
-
-		//Convert days to hours
-		daysH := float64(Ndays) * 24
-
-		if diff < daysH {
-
-			//Inner loop
-			value.ForEach(func(key, value gjson.Result) bool {
-
-				if k := key.String(); k == "4. close" {
-					v := value.Float()
-					//fmt.Printf("The key is:%s, the value is:%f\n", k, v)
-					getRes.Dateval[date] = v
-				}
-				return true // keep iterating
-			})
-		}
-		return true // keep iterating
-	})
-
-	return getRes, nil
 }
 
 func (r *Result) Getot() {

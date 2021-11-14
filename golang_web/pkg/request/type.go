@@ -2,6 +2,10 @@ package request
 
 import "time"
 
+type Daily struct {
+	MetaData `json:"Meta Data"`
+	DD       map[string]Dailydata `json:"Time Series (Daily)"`
+}
 type MetaData struct {
 	Info           string `json:"1. Information"`
 	Symbol         string `json:"2. Symbol"`
@@ -10,24 +14,18 @@ type MetaData struct {
 	Tz             string `json:"5. Time Zone"`
 }
 
+type Dailydate struct {
+	time.Time
+}
 type Dailydata struct {
-	Open       string `json:"1. Open"`
+	Open       string `json:"1. open"`
 	High       string `json:"2. high"`
 	Low        string `json:"3. low"`
 	Close      string `json:"4. close"`
 	Adj_close  string `json:"5. adjusted close"`
-	Volume     int64  `json:"6. volume"` // `json:"id,string,omitempty"`
+	Volume     string `json:"6. volume"` // `json:"id,string,omitempty"`
 	Div_amount string `json:"7. dividend amount"`
 	Split_coef string `json:"8. split coefficient"`
-}
-
-type Dailydate struct {
-	time.Time
-}
-
-type Daily struct {
-	MetaData `json:"Meta Data"`
-	DD       map[string]Dailydata `json:"Time Series (Daily)"`
 }
 
 /* type Daily struct {
