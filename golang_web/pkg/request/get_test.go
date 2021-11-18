@@ -1,6 +1,7 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,11 +28,17 @@ func TestGetJson(t *testing.T) {
 
 			require.NoError(t, err)
 
-			//	json.MarshalIndent(d, "   ", "    ")
-			fmt.Println(d)
-			//fmt.Println(d.DD)
+			fmt.Println(PrettyPrint(d))
+
+			h := d.DD["2021-06-24"]
+			fmt.Printf("Type %T, value %v", h.High, h.High)
 
 			//fmt.Println(d.MetaData.Info)
 		})
 	}
+}
+
+func PrettyPrint(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }

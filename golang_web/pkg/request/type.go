@@ -1,7 +1,5 @@
 package request
 
-import "time"
-
 type Daily struct {
 	MetaData `json:"Meta Data"`
 	DD       map[string]Dailydata `json:"Time Series (Daily)"`
@@ -14,18 +12,16 @@ type MetaData struct {
 	Tz             string `json:"5. Time Zone"`
 }
 
-type Dailydate struct {
-	time.Time
-}
+// NOTE: be careful without the string bit at the end - `json:"1. open,string"` it doesn't know what the original type is and a nil value is initialised
 type Dailydata struct {
-	Open       string `json:"1. open"`
-	High       string `json:"2. high"`
-	Low        string `json:"3. low"`
-	Close      string `json:"4. close"`
-	Adj_close  string `json:"5. adjusted close"`
-	Volume     string `json:"6. volume"` // `json:"id,string,omitempty"`
-	Div_amount string `json:"7. dividend amount"`
-	Split_coef string `json:"8. split coefficient"`
+	Open       float64 `json:"1. open,string"`
+	High       float64 `json:"2. high,string"`
+	Low        float64 `json:"3. low,string"`
+	Close      float64 `json:"4. close,string"`
+	Adj_close  float64 `json:"5. adjusted close,string"`
+	Volume     uint64  `json:"6. volume,string"`
+	Div_amount float64 `json:"7. dividend amount,string"`
+	Split_coef float64 `json:"8. split coefficient,string"`
 }
 
 /* type Daily struct {
