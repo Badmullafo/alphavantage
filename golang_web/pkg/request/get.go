@@ -28,6 +28,10 @@ type Result struct {
 	Value   float64
 }
 
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 func GetJson(apiKey, Symbol string, Ndays int) (*Daily, error) {
 
 	//apiKey, Symbol := "RABZYXWVHB8MX5GO", "IBM"
