@@ -20,14 +20,6 @@ const (
 	timeout   = 1000
 )
 
-type Result struct {
-	Symbol  string                // the stock name .e.g. FORG
-	Ndays   int                   // Number of days data to get
-	Dtype   string                // data type - total/average
-	Dateval map[time.Time]float64 // the date stamp of values returned
-	Value   float64
-}
-
 type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
@@ -62,29 +54,65 @@ func GetJson(apiKey, Symbol string, Ndays int) (*Daily, error) {
 		log.Fatal(err)
 	}
 
-	d := Daily{}
+	d := &Daily{}
 
 	fmt.Println("Unmarshalling", currentTime)
 	json.Unmarshal([]byte(out), &d)
 
-	return &d, nil
+	return d, nil
 
 }
 
-func (r *Result) Getot() {
+func (r *Result) getInRange(d *Daily) ([]Dailydata, error) {
 
-	var total float64
-	for _, value := range r.Dateval {
-		total = total + value
+	dslice := []Dailydata{}
+	loc, _ := time.LoadLocation(tz)
+
+	//set timezone,
+	currentTime := time.Now().In(loc)
+
+	for k, v := range d.DD {
+
+		date, err := time.Parse(layoutISO, k)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		diff := currentTime.Sub(date).Hours()
+
+		//Convert days to hours
+		daysH := float64(r.Ndays) * 24
+
+		if diff < daysH {
+			dslice = append(dslice, v)
+
+		}
 	}
+	return dslice, nil
+}
 
+func (r *Result) Getot(d []Dailydata, value string) {
+	var total float64
+	for _, v := range d {
+		switch value {
+		case "high":
+			total = total + v.High
+		}
+	}
 	r.Value = total
 	r.Dtype = "total"
 }
 
+func (r Result) String() string {
+	//var v float64 = r.Value
+	return fmt.Sprintf("%.2f", r.Value)
+}
+
+/*
 func (r *Result) Getavg() {
 	r.Getot()
 	r.Value = r.Value / float64(len(r.Dateval))
 	r.Dtype = "average"
 
 }
+*/

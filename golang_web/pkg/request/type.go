@@ -1,9 +1,18 @@
 package request
 
+type Result struct {
+	Symbol  string             // the stock name .e.g. FORG
+	Ndays   int                // Number of days data to get
+	Dtype   string             // data type - total/average
+	Dateval map[string]float64 // the date stamp of values returned
+	Value   float64
+}
+
 type Daily struct {
 	MetaData `json:"Meta Data"`
 	DD       map[string]Dailydata `json:"Time Series (Daily)"`
 }
+
 type MetaData struct {
 	Info           string `json:"1. Information"`
 	Symbol         string `json:"2. Symbol"`
