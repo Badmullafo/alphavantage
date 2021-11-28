@@ -1,11 +1,10 @@
 package request
 
 type Result struct {
-	Symbol  string             // the stock name .e.g. FORG
-	Ndays   int                // Number of days data to get
-	Dtype   string             // data type - total/average
-	Dateval map[string]float64 // the date stamp of values returned
-	Value   float64
+	Symbol string // the stock name .e.g. FORG
+	Ndays  int    // Number of days data to get
+	Dtype  string // data type - total/average
+	Value  float64
 }
 
 type Daily struct {

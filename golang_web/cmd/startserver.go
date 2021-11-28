@@ -18,6 +18,7 @@ import (
 	"context"
 	_ "errors"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -71,19 +72,27 @@ var srvCmd = &cobra.Command{
 
 		for {
 			time.Sleep(time.Second * rs)
-			r, err := request.GetJson(apikey, stock, ndays)
+			var c = &http.Client{}
+
+			r := request.NewRequest(c, apikey, stock, ndays, 2*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*3))
+			defer cancel()
+
+			d, err := r.GetJson(ctx)
 
 			if err != nil {
 				return err
 			}
 
+			res := &request.Result{}
+
 			switch action := args[0]; action {
 			case "total":
-				r.Getot()
-				resultChan <- r
-			case "average":
-				r.Getavg()
-				resultChan <- r
+				res.Getot(d, "high")
+				resultChan <- res
+			//case "average":
+			//	res.Getavg(d, "high")
+			//		resultChan <- res
 			default:
 				return fmt.Errorf("you must choose total")
 			}

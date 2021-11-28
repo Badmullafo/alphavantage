@@ -24,32 +24,54 @@ type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-func GetJson(apiKey, Symbol string, Ndays int) (*Daily, error) {
+type Request struct {
+	c       HTTPClient
+	url     string
+	timeout time.Duration
+	Ndays   int
+}
+
+func NewRequest(client HTTPClient, apiKey, symbol string, ndays int, timeout time.Duration) *Request {
 
 	//apiKey, Symbol := "RABZYXWVHB8MX5GO", "IBM"
-	url := urlS + apiKey + rtype + Symbol
+	url := urlS + apiKey + rtype + symbol
+
+	return &Request{
+		c:       client,
+		url:     url,
+		Ndays:   ndays,
+		timeout: time.Millisecond * timeout,
+	}
+}
+
+func (r *Request) GetJson(ctx context.Context) ([]Dailydata, error) {
+
+	//apiKey, Symbol := "RABZYXWVHB8MX5GO", "IBM"
+	//url := urlS + apiKey + rtype + Symbol
 	//init the loc
 	loc, _ := time.LoadLocation(tz)
 
 	//set timezone,
 	currentTime := time.Now().In(loc)
-	fmt.Println("getting data from", url)
+	fmt.Println("getting data from", r.url)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Millisecond*timeout))
+	//NewAPI()
+
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
-	req = req.WithContext(ctx)
 
-	c := &http.Client{}
-	res, err := c.Do(req)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer res.Body.Close()
-	out, err := ioutil.ReadAll(res.Body)
+
+	resp, err := r.c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	out, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,11 +81,11 @@ func GetJson(apiKey, Symbol string, Ndays int) (*Daily, error) {
 	fmt.Println("Unmarshalling", currentTime)
 	json.Unmarshal([]byte(out), &d)
 
-	return d, nil
+	return r.getInRange(d), nil
 
 }
 
-func (r *Result) getInRange(d *Daily) ([]Dailydata, error) {
+func (r *Request) getInRange(d *Daily) []Dailydata {
 
 	dslice := []Dailydata{}
 	loc, _ := time.LoadLocation(tz)
@@ -88,7 +110,7 @@ func (r *Result) getInRange(d *Daily) ([]Dailydata, error) {
 
 		}
 	}
-	return dslice, nil
+	return dslice
 }
 
 func (r *Result) Getot(d []Dailydata, value string) {

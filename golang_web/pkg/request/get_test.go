@@ -1,24 +1,42 @@
 package request
 
 import (
-	"encoding/json"
+	"bytes"
+	"context"
 	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/require"
-
-	//"gopkg.in/square/go-jose.v2/json"
-	"io"
+	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	//"gopkg.in/square/go-jose.v2/json"
 )
 
-type testWeb struct {
-	url  string
-	body string
+// Custom type that allows setting the func that our Mock Do func will run instead
+type MockDoType func(req *http.Request) (*http.Response, error)
+
+// MockClient is the mock client
+type MockClient struct {
+	MockDo MockDoType
 }
 
-func TestGetJson(t *testing.T) {
+// Overriding what the Do function should "do" in our MockClient
+func (m *MockClient) Do(req *http.Request) (*http.Response, error) {
+	return m.MockDo(req)
+}
+
+type testWeb struct {
+	url        string
+	filebody   string
+	timeout    time.Duration
+	statuscode int
+	reqval     string
+}
+
+func TestGitHubCallSuccess(t *testing.T) {
+
 	tests := []struct {
 		name, apiKey, Symbol string
 		Ndays                int
@@ -30,18 +48,24 @@ func TestGetJson(t *testing.T) {
 			Symbol: "IBM",
 			Ndays:  25,
 			web: testWeb{
-				url:  "http://faketest.com",
-				body: "Some stuff here",
+				url:        "http://faketest.com",
+				filebody:   "mocks/today.json",
+				timeout:    time.Second * 20,
+				statuscode: 200,
+				reqval:     "495.04",
 			},
 		},
 		{
-			name:   "first",
+			name:   "Timeout",
 			apiKey: "RABZYXWVHB8MX5GO",
 			Symbol: "IBM",
-			Ndays:  25,
+			Ndays:  5,
 			web: testWeb{
-				url:  "http://faketest.com",
-				body: "Some stuff here",
+				url:        "http://faketest.com",
+				filebody:   "mocks/today.json",
+				timeout:    time.Millisecond * 1,
+				statuscode: 400,
+				reqval:     "59.00",
 			},
 		},
 	}
@@ -49,22 +73,42 @@ func TestGetJson(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			d, err := GetJson(tt.apiKey, tt.Symbol, tt.Ndays)
-
+			content, err := ioutil.ReadFile(tt.web.filebody)
 			require.NoError(t, err)
 
-			fmt.Println(PrettyPrint(d))
+			// create a new reader with that JSON
+			r := ioutil.NopCloser(bytes.NewReader([]byte(content)))
 
+			Client := &MockClient{
+				MockDo: func(*http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: 200,
+						Body:       r,
+					}, nil
+				},
+			}
+
+			nr := NewRequest(Client, tt.apiKey, tt.Symbol, tt.Ndays, time.Second*2)
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(tt.web.timeout))
+			defer cancel()
+
+			dd, err := nr.GetJson(ctx)
 			require.NoError(t, err)
 
-			resp := ExampleResponseRecorder(tt.web.url, tt.web.body)
+			res := &Result{}
 
-			require.Equal(t, resp.StatusCode, 200)
+			res.Getot(dd, "high")
 
-			//fmt.Println(d.MetaData.Info)
+			assert.Equal(t, res.String(), tt.web.reqval)
+
+			fmt.Println(res)
+
 		})
 	}
 }
+
+/*
 
 func TestGetJsonReal(t *testing.T) {
 	type test struct {
@@ -136,3 +180,4 @@ func ExampleResponseRecorder(url, rbody string) *http.Response {
 	// text/html; charset=utf-8
 	// <html><body>Hello World!</body></html>
 }
+*/
