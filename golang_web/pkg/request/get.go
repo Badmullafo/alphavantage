@@ -16,7 +16,7 @@ const (
 	tz        = "US/Eastern"
 	layoutUS  = "January 2, 2006"
 	urlS      = "https://www.alphavantage.co/query?apikey="
-	rtype     = "&function=TIME_SERIES_DAILY_ADJUSTED&symbol="
+	rtype     = "&function=TIME_SERIES_DAILY&symbol="
 	timeout   = 1000
 )
 
@@ -123,6 +123,7 @@ func (r *Result) Getot(d []Dailydata, value string) {
 	}
 	r.Value = total
 	r.Dtype = "total"
+	fmt.Println("The total is", total)
 }
 
 func (r Result) String() string {
@@ -130,11 +131,9 @@ func (r Result) String() string {
 	return fmt.Sprintf("%.2f", r.Value)
 }
 
-/*
-func (r *Result) Getavg() {
-	r.Getot()
-	r.Value = r.Value / float64(len(r.Dateval))
+func (r *Result) Getavg(d []Dailydata, value string) {
+	r.Getot(d, value)
+	r.Value = r.Value / float64(r.Ndays)
 	r.Dtype = "average"
-
+	fmt.Println("The average is", r.Value)
 }
-*/

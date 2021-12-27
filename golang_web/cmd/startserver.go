@@ -19,18 +19,38 @@ import (
 	_ "errors"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/request"
 	"github.com/Badmullafo/alphavantage/golang_web/pkg/server"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 const rs = 5
 
-var wg sync.WaitGroup
+var (
+	wg            sync.WaitGroup
+	apikey, stock string
+	ndays         int
+)
+
+func init() {
+	// log with colours
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: false,
+		FullTimestamp: true,
+	})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	log.SetReportCaller(true)
+}
 
 // byeCmd represents the bye command
 var srvCmd = &cobra.Command{
@@ -41,27 +61,28 @@ var srvCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		//If its not defined at command line look it up from viper
-		apikey, _ := cmd.Flags().GetString("apikey")
-		if apikey == "" {
+		if apikey, _ = cmd.Flags().GetString("apikey"); apikey == "" {
+			log.Info("Flag for 'apikey' not provided at command line, getting from viper")
 			apikey = viper.GetViper().GetString("apikey")
 		}
+		log.Infof("API key is %s", apikey)
 
-		stock, _ := cmd.Flags().GetString("stock")
-		if stock == "" {
+		if stock, _ = cmd.Flags().GetString("stock"); stock == "" {
+			log.Info("Flag for 'stock' not provided at command line, getting from viper")
 			stock = viper.GetViper().GetString("stock")
 		}
+		log.Infof("The stock is is %s", stock)
 
-		ndays, _ := cmd.Flags().GetInt("ndays")
-		if ndays == 0 {
+		if ndays, _ = cmd.Flags().GetInt("ndays"); ndays == 0 {
+			log.Info("Flag for 'ndays' not provided at command line, getting from viper")
 			ndays = viper.GetViper().GetInt("ndays")
 		}
+		log.Infof("The ndays is is %d", ndays)
 
 		ctx := context.Background()
 		resultChan := make(chan *request.Result)
 
 		go func() {
-			fmt.Println("Inside go func")
-
 			// Create a new context, with its cancellation function
 			// from the original context
 			ctx, cancel := context.WithCancel(ctx)
@@ -90,11 +111,11 @@ var srvCmd = &cobra.Command{
 			case "total":
 				res.Getot(d, "high")
 				resultChan <- res
-			//case "average":
-			//	res.Getavg(d, "high")
-			//		resultChan <- res
+			case "average":
+				res.Getavg(d, "high")
+				resultChan <- res
 			default:
-				return fmt.Errorf("you must choose total")
+				return fmt.Errorf("you must choose total or average")
 			}
 		}
 		//return nil
